@@ -1,0 +1,208 @@
+#include<stdio.h>
+#include<unistd.h>
+#include<stdlib.h>
+#include<pthread.h>
+#include<stdbool.h>
+int Nummice;					
+int Numcats;
+int NumBowlsInput;
+int NumBowls;
+int catnumber=0;
+int micenumber=0;
+bool MiceComplete=0,CatComplete=0;
+int foods[100];
+void detail();
+void *cats();
+void *mice();
+		int Kitchen(int food)		//function to prepare food so that cats and mice don't starve
+		{
+			NumBowls=food;
+			if(NumBowls==0)
+			{
+				printf("\nFood is being prepared");
+				NumBowls = NumBowlsInput;	
+				return NumBowls;
+			}
+		}
+pthread_mutex_t l;		//mutex lock declaration
+int main()
+{
+	pthread_t t1,t2;									//declaring threads
+	pthread_mutex_init(&l,NULL);						//initialising mutex lock
+	printf("\nEnter Number of dish Bowls ready : ");
+	scanf("%d",&NumBowlsInput);							//User input for number of dishes
+	NumBowls=NumBowlsInput;
+	printf("\nEnter Number of Cats in house : ");
+	scanf("%d",&Numcats);								//User input for number of cats
+	printf("\nEnter Number of Mice in house : ");
+	scanf("%d",&Nummice);								//User input for number of mice
+	int i;
+	while(1)											//running thread in loop
+	{
+		//printf("\n\nEntering main loop\n");
+		pthread_create(&t1,NULL,cats,NULL);				//creating threads for cats
+		pthread_create(&t2,NULL,mice,NULL);				//creating threads for mice
+		pthread_join(t1,NULL);
+		pthread_join(t2,NULL);
+	}
+}
+
+void *cats()
+{	
+	pthread_mutex_lock(&l);								//lock such that mice cannot enter when cat is eating
+	//sleep(1);
+	if(CatComplete==0)									//flag to check the cats entered
+	{
+		if(Numcats!=0)									//running thread only till number of cats not equal to 0
+	
+		{	
+
+				printf("\n\t\t\t***CAT IS COMING TO EAT***\n");
+				printf("\nCat[%d] is eating",catnumber+1);		
+				sleep(2);
+				printf("\nDanger for Mouse");
+				NumBowls--;										//decrease number of dishes when cat has eaten
+			//	printf("\nCat[%d] has eaten",catnumber+1);
+				catnumber++;									//indicate that one cat has completed eating			
+				detail();										//function call to show the datails of cats mice and dishes at this point
+				if(NumBowls==0) {
+					printf("\n\t\t***No Food Left!!-_-COOK AGAIN***");
+					Kitchen(NumBowls);							//function call to prepare more food
+										}
+			if(catnumber==Numcats)								//user's chpice when all cats have eaten
+			{
+					int choice;
+					x:
+					printf("\nAll cats have eaten once for the day.\nPress\n1. To Call the Day Off\n2. Let Mice eat.\n3. Let the Cats eat again(WARNING  !!! (mice might starve))\n ");
+					scanf("%d",&choice);
+					switch(choice)
+					{
+						case 1:
+						system("cls");
+						printf("\n\t\t\t\t-----THANK  YOU------ \n");
+						exit(0);
+						break;
+						case 2:
+						catnumber=0;
+						CatComplete=1;
+						MiceComplete=0;
+						if(NumBowls==0) {
+					printf("\n\t\t***No Food Left!!-_-COOK AGAIN***");
+					Kitchen(NumBowls);
+										}
+						detail();
+						break;
+						case 3:
+						catnumber=0;
+						if(NumBowls==0) {
+					printf("\n\t\t***No Food Left!!-_-COOK AGAIN***");
+					Kitchen(NumBowls);
+										}	
+						break;
+						default:
+						printf("\ninvalid input.Try again");
+						goto x;
+						break;
+					}
+			}
+	printf("\n\t\t\t***CAT IS LEAVING***");
+
+				
+
+		}
+		else
+		{
+			printf("\nNo Cats in the house");
+			printf("\nCHOOSE AGAIN");
+			goto x;
+		}
+
+	}
+
+	pthread_mutex_unlock(&l);						//unlocking the thread to let the mice enter
+	
+}
+void *mice()
+{
+	pthread_mutex_lock(&l);							//locking so that cats don't see mice eating
+	//sleep(1);
+	if (MiceComplete==0)							//flag to check mice have entered
+	{
+
+	if(Nummice!=0)									//running thread when number of mice is not equal to 0
+	{			
+		printf("\n\t\t\t***NOW THE MOUSE CAN COME***");
+		printf("\nMouse[%d] is eating",micenumber+1);
+		sleep(2);
+		printf("\nAnd the lazy Cat is sleeping");
+		NumBowls--;									//decreasing number of dishes when mice has eaten
+		micenumber++;								//shows the number of mice that have eaten
+		detail();
+		if(NumBowls==0) {
+					printf("\n\t\t***No Food Left!!-_-COOK AGAIN***");
+					Kitchen(NumBowls);				//function call to prepare more food when the dishes equal to 0
+										}
+
+		if(micenumber==Nummice)						//user's input when all mice have eaten
+
+		{
+			int choice1;
+			y:
+			printf("\nAll mice have eaten once for the day.\nPress\n1. for exit\n2.Let cats eat.\n3.Let mices eat again(WARNING  !!! (cats might starve)) \n");
+			scanf("%d",&choice1);
+			switch(choice1)
+			{
+				case 1:
+				exit(0);
+				break;
+				case 2:
+				micenumber=0;
+				MiceComplete=1;
+				CatComplete=0;
+				if(NumBowls==0) {
+					printf("\n\t\t***No Food Left!!-_-COOK AGAIN***");
+					Kitchen(NumBowls);
+				}
+				//detail();
+				break;
+				case 3:
+				micenumber=0;
+				if(NumBowls==0) {
+					printf("\n\t\t***No Food Left!!-_-COOK AGAIN***");
+					Kitchen(NumBowls);
+				}
+				break;
+				default:
+				printf("\ninvalid input.Try again");
+				goto y;
+				break;
+			}
+
+		}
+	printf("\n\t\t\t***MOUSE IS LEAVING***");
+		
+		//Kitchen(NumBowls);
+			
+}
+	else
+		{
+			printf("\nNo Mice in the house");
+			printf("\nCHOOSE AGAIN");
+			goto y;
+			
+		}
+}
+	pthread_mutex_unlock(&l);					//unlocking so that next cat or mice can entera
+
+}
+
+void detail() 
+{
+	printf("\nNumber of Cats = %d ",Numcats);
+	printf("\nNumber of Mice = %d ",Nummice);
+	printf("\nNumber of Food Bowls left = %d ",NumBowls);
+	printf("\nNumber of Cats with Tummy full = %d ",catnumber);
+	printf("\nNumber of Mice with Tummy full = %d ",micenumber);
+
+}
+
