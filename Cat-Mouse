@@ -25,6 +25,8 @@ void *mice();
 			}
 		}
 pthread_mutex_t l;		//mutex lock declaration
+
+
 int main()
 {
 	pthread_t t1,t2;									//declaring threads
@@ -46,6 +48,7 @@ int main()
 		pthread_join(t2,NULL);
 	}
 }
+
 
 void *cats()
 {	
@@ -122,6 +125,8 @@ void *cats()
 	pthread_mutex_unlock(&l);						//unlocking the thread to let the mice enter
 	
 }
+
+
 void *mice()
 {
 	pthread_mutex_lock(&l);							//locking so that cats don't see mice eating
