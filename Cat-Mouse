@@ -3,7 +3,6 @@
 #include<stdlib.h>
 #include<pthread.h>
 #include<stdbool.h>
-
 int Nummice;					
 int Numcats;
 int NumBowlsInput;
@@ -20,7 +19,7 @@ void *mice();
 			NumBowls=food;
 			if(NumBowls==0)
 			{
-				printf("\nFood is being prepared");
+				printf("\nFood is being prepared\n");
 				NumBowls = NumBowlsInput;	
 				return NumBowls;
 			}
@@ -32,13 +31,41 @@ int main()
 {
 	pthread_t t1,t2;									//declaring threads
 	pthread_mutex_init(&l,NULL);						//initialising mutex lock
+	m:
 	printf("\nEnter Number of dish Bowls ready : ");
-	scanf("%d",&NumBowlsInput);							//User input for number of dishes
+	scanf("%d",&NumBowlsInput);	
+	if (NumBowlsInput == 0)
+							{
+								printf("Number of bowls cannot be Zero. Try Again\n");
+								goto m;
+							}
+	if (NumBowlsInput<0)
+	{
+		printf("\nNumber can not be negative. Try Again\n");
+		goto m;
+	}												//User input for number of dishes
 	NumBowls=NumBowlsInput;
+	n:
 	printf("\nEnter Number of Cats in house : ");
 	scanf("%d",&Numcats);								//User input for number of cats
+	if (Numcats<0)
+	{
+		printf("\nNumber can not be negative. Try Again\n");
+		goto n;
+	}
+	o:
 	printf("\nEnter Number of Mice in house : ");
 	scanf("%d",&Nummice);								//User input for number of mice
+	if (Numcats<0)
+	{
+		printf("\nNumber can not be negative. Try Again\n");
+		goto o;
+	}
+	if(Numcats==0 && Nummice==0) {
+		printf("Someone has to be in the house both cats and mice can not be Zero in number. Try again\n");
+		goto n;
+	}
+
 	int i;
 	while(1)											//running thread in loop
 	{
@@ -54,7 +81,7 @@ int main()
 void *cats()
 {	
 	pthread_mutex_lock(&l);								//lock such that mice cannot enter when cat is eating
-	//sleep(1);
+	sleep(1);
 	if(CatComplete==0)									//flag to check the cats entered
 	{
 		if(Numcats!=0)									//running thread only till number of cats not equal to 0
@@ -63,11 +90,12 @@ void *cats()
 
 				printf("\n\t\t\t***CAT IS COMING TO EAT***\n");
 				printf("\nCat[%d] is eating",catnumber+1);		
-				sleep(2);
+				// sleep(2);
 				printf("\nDanger for Mouse");
 				NumBowls--;										//decrease number of dishes when cat has eaten
 			//	printf("\nCat[%d] has eaten",catnumber+1);
 				catnumber++;									//indicate that one cat has completed eating			
+	printf("\n\t\t\t***CAT IS LEAVING***\n\n");
 				detail();										//function call to show the datails of cats mice and dishes at this point
 				if(NumBowls==0) {
 					printf("\n\t\t***No Food Left!!-_-COOK AGAIN***");
@@ -77,7 +105,7 @@ void *cats()
 			{
 					int choice;
 					x:
-					printf("\nAll cats have eaten once for the day.\nPress\n1. To Call the Day Off\n2. Let Mice eat.\n3. Let the Cats eat again(WARNING  !!! (mice might starve))\n ");
+					printf("\n\nAll cats have eaten once for the day.\nPress\n1.To Call the Day Off\n2. Let Mice eat.\n3. Let the Cats eat again(WARNING  !!! (mice might starve))\n ");
 					scanf("%d",&choice);
 					switch(choice)
 					{
@@ -87,6 +115,10 @@ void *cats()
 						exit(0);
 						break;
 						case 2:
+										if (Numcats == 0)
+										printf("\n\nNO Mice in the House\n(Cats Will start eating)");
+
+						letMiceEat:
 						catnumber=0;
 						CatComplete=1;
 						MiceComplete=0;
@@ -109,7 +141,6 @@ void *cats()
 						break;
 					}
 			}
-	printf("\n\t\t\t***CAT IS LEAVING***");
 
 				
 
@@ -117,8 +148,7 @@ void *cats()
 		else
 		{
 			printf("\nNo Cats in the house");
-			printf("\nCHOOSE AGAIN");
-			goto x;
+			goto letMiceEat;
 		}
 
 	}
@@ -131,7 +161,7 @@ void *cats()
 void *mice()
 {
 	pthread_mutex_lock(&l);							//locking so that cats don't see mice eating
-	//sleep(1);
+	sleep(1);
 	if (MiceComplete==0)							//flag to check mice have entered
 	{
 
@@ -139,10 +169,10 @@ void *mice()
 	{			
 		printf("\n\t\t\t***NOW THE MOUSE CAN COME***");
 		printf("\nMouse[%d] is eating",micenumber+1);
-		sleep(2);
-		printf("\nAnd the lazy Cat is sleeping");
+		sleep(1);
 		NumBowls--;									//decreasing number of dishes when mice has eaten
 		micenumber++;								//shows the number of mice that have eaten
+	printf("\n\t\t\t***MOUSE IS LEAVING***");
 		detail();
 		if(NumBowls==0) {
 					printf("\n\t\t***No Food Left!!-_-COOK AGAIN***");
@@ -154,7 +184,7 @@ void *mice()
 		{
 			int choice1;
 			y:
-			printf("\nAll mice have eaten once for the day.\nPress\n1. for exit\n2.Let cats eat.\n3.Let mices eat again(WARNING  !!! (cats might starve)) \n");
+			printf("\n\nAll mice have eaten once for the day.\nPress\n1.To exit\n2.Let cats eat.\n3.Let mices eat again(WARNING  !!! (cats might starve)) \n");
 			scanf("%d",&choice1);
 			switch(choice1)
 			{
@@ -162,19 +192,24 @@ void *mice()
 				exit(0);
 				break;
 				case 2:
+					
+				if (Numcats == 0)
+					printf("\n\nNO CATS in the House\n(Mice Will start eating)");
+
+				letCatsEat:
 				micenumber=0;
 				MiceComplete=1;
 				CatComplete=0;
 				if(NumBowls==0) {
-					printf("\n\t\t***No Food Left!!-_-COOK AGAIN***");
+					printf("\n\t\t***No Food Left!!-_-COOK AGAIN***\n");
 					Kitchen(NumBowls);
 				}
-				//detail();
 				break;
 				case 3:
+				gotoCase3OfMice:
 				micenumber=0;
 				if(NumBowls==0) {
-					printf("\n\t\t***No Food Left!!-_-COOK AGAIN***");
+					printf("\n\t\t***No Food Left!!-_-COOK AGAIN***\n");
 					Kitchen(NumBowls);
 				}
 				break;
@@ -185,7 +220,6 @@ void *mice()
 			}
 
 		}
-	printf("\n\t\t\t***MOUSE IS LEAVING***");
 		
 		//Kitchen(NumBowls);
 			
@@ -193,8 +227,7 @@ void *mice()
 	else
 		{
 			printf("\nNo Mice in the house");
-			printf("\nCHOOSE AGAIN");
-			goto y;
+			goto letCatsEat;
 			
 		}
 }
@@ -204,11 +237,11 @@ void *mice()
 
 void detail() 
 {
-	printf("\nNumber of Cats = %d ",Numcats);
-	printf("\nNumber of Mice = %d ",Nummice);
-	printf("\nNumber of Food Bowls left = %d ",NumBowls);
-	printf("\nNumber of Cats with Tummy full = %d ",catnumber);
-	printf("\nNumber of Mice with Tummy full = %d ",micenumber);
+	printf("\n\n********** Number of Cats = %d \tNumber of Cats with Tummy full = %d",Numcats,catnumber);
+	printf("\n********** Number of Mice = %d \tNumber of Mice with Tummy full = %d",Nummice,micenumber);
+	printf("\n\n********** Number of Food Bowls left = %d **********",NumBowls);
+	// printf("\nNumber of Cats with Tummy full = %d ",catnumber);
+	//printf("\nNumber of Mice with Tummy full = %d ",micenumber);
 
 }
 
